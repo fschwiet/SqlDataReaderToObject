@@ -52,12 +52,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DTOs\Foo.cs" />
+    <Compile Include="ShouldBeAbleToHydrateObjects.cs" />
     <Compile Include="TempDatabaseTest.cs" />
     <Compile Include="TempDatabase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SqlDataReaderToObject\SqlDataReaderToObject.csproj">
+      <Project>{FE25D9F7-8B13-4012-A9B9-2697A7B292C7}</Project>
+      <Name>SqlDataReaderToObject</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
