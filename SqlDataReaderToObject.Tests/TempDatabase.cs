@@ -49,5 +49,51 @@ namespace SqlDataReaderToObject.Tests
             
             new FileInfo(File).Delete();
         }
+
+        public void RunNonQuery(string createTableFooColumn1BigintNotNull)
+        {
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = createTableFooColumn1BigintNotNull;
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public object RunScalar(string selectCountFromFoo)
+        {
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = selectCountFromFoo;
+                    return command.ExecuteScalar();
+                }
+            }
+        }
+
+        public void RunQuery(Action<IDataReader> handler)
+        {
+            using (var connection = GetConnection())
+            {
+                connection.Open();
+
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "SELECT * FROM Foo";
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        handler(reader);
+                    }
+                }
+            }
+        }
     }
 }

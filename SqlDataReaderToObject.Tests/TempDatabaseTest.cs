@@ -16,28 +16,11 @@ namespace SqlDataReaderToObject.Tests
         {
             using (var database = TempDatabase.Create())
             {
-                using (var connection = database.GetConnection())
-                {
-                    connection.Open();
+                database.RunNonQuery(@"CREATE TABLE Foo([column1] [bigint] NOT NULL)");
 
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = @"CREATE TABLE Foo([column1] [bigint] NOT NULL)";
-                        command.ExecuteNonQuery();
-                    }
-                }
+                int result = (int)database.RunScalar(@"SELECT COUNT(*) + 123 FROM Foo");
 
-                using (var connection = database.GetConnection())
-                {
-                    connection.Open();
-
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = @"SELECT COUNT(*) + 123 FROM Foo";
-                        var result = (int)command.ExecuteScalar();
-                        Assert.That(result, Is.EqualTo(123));
-                    }
-                }
+                Assert.That(result, Is.EqualTo(123));
 
                 // leaked connections are ok
                 database.GetConnection().Open();
