@@ -50,14 +50,25 @@ namespace SqlDataReaderToObject.Tests
             new FileInfo(File).Delete();
         }
 
-        public void RunNonQuery(string createTableFooColumn1BigintNotNull)
+        public void RunNonQuery(string createTableFooColumn1BigintNotNull, Dictionary<string,object> parameters = null)
         {
+            parameters = null ?? new Dictionary<string, object>();
+
             using (var connection = GetConnection())
             {
                 connection.Open();
 
-                using (var command = connection.CreateCommand())
+                using (IDbCommand command = connection.CreateCommand())
                 {
+                    foreach (var parameter in parameters)
+                    {
+                        var dbParameter = command.CreateParameter();
+                        dbParameter.ParameterName = parameter.Key;
+                        dbParameter.Value = parameter.Value;
+                        command.Parameters.Add(dbParameter);
+                    }
+
+
                     command.CommandText = createTableFooColumn1BigintNotNull;
                     command.ExecuteNonQuery();
                 }

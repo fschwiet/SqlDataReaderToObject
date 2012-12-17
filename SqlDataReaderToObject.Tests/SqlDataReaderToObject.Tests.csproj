@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="NJasmine">
       <HintPath>..\packages\NJasmine.NUnit.0.3.3.0\lib\NJasmine.dll</HintPath>
     </Reference>
@@ -52,6 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DTOs\AllTheTypes.cs" />
     <Compile Include="DTOs\Foo.cs" />
     <Compile Include="ShouldBeAbleToHydrateObjects.cs" />
     <Compile Include="TempDatabaseTest.cs" />
