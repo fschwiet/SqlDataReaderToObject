@@ -1,0 +1,9 @@
+bin/
+obj/
+_ReSharper.*
+*.ncb
+*.aps
+*.suo
+*.sln.cache
+*.dotCover
+*.user
