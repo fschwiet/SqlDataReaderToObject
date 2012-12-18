@@ -80,6 +80,7 @@ namespace SqlDataReaderToObject.Tests
 
                     Console.WriteLine(tableExpression.ToString());
                     Console.WriteLine(insertExpression.ToString());
+                    Console.WriteLine(JsonConvert.SerializeObject(parameters));
 
                     database.RunNonQuery(tableExpression.ToString());
                     database.RunNonQuery(insertExpression.ToString(), parameters);

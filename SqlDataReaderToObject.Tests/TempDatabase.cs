@@ -12,21 +12,44 @@ namespace SqlDataReaderToObject.Tests
 {
     public class TempDatabase : IDisposable
     {
-        public string File { get; private set; }
+        public string Name { get; private set; }
         public string ConnectionString { get; private set; }
         private List<IDbConnection> _connections = new List<IDbConnection>(); 
 
         public static TempDatabase Create()
         {
-            var file = Path.GetTempFileName();
+            var databaseName = typeof (TempDatabase).Namespace.Replace(".", "_");
+
+            var databaseFilepath = Path.Combine("c:\\temp", "Sql.mdf");
 
             var connectionString = new SqlConnectionStringBuilder();
-            connectionString.DataSource = file;
-            connectionString.PersistSecurityInfo = false;
+            connectionString.DataSource = ".\\sqlexpress";
+            connectionString.InitialCatalog = databaseName;
+            connectionString.IntegratedSecurity = true;
 
+            DatabaseInitialization.DetachDatabase(connectionString.ToString());
+
+            if (File.Exists(databaseFilepath))
+                File.Delete(databaseFilepath);
             
-            SqlCeEngine en = new SqlCeEngine(connectionString.ToString());
-            return new TempDatabase() { File = file, ConnectionString = en.LocalConnectionString };
+            connectionString.InitialCatalog = "master";
+            
+            using (var masterDatabaseConnection = new SqlConnection(connectionString.ToString()))
+            {
+                masterDatabaseConnection.Open();
+
+                var createSqlText = string.Format(@"
+                        CREATE DATABASE [{0}] ON PRIMARY (NAME={0}, FILENAME='{1}')", databaseName, databaseFilepath);
+
+                using (var createCommand = new SqlCommand(createSqlText, masterDatabaseConnection))
+                {
+                    createCommand.ExecuteNonQuery();
+                }
+            }
+
+            connectionString.InitialCatalog = databaseName;
+
+            return new TempDatabase() { Name = databaseName, ConnectionString = connectionString.ToString()};
         }
 
         private TempDatabase()
@@ -35,7 +58,7 @@ namespace SqlDataReaderToObject.Tests
 
         public IDbConnection GetConnection()
         {
-            var result = new SqlCeConnection(ConnectionString);
+            var result = new SqlConnection(ConnectionString);
             _connections.Add(result);
             return result;
         }
@@ -47,12 +70,12 @@ namespace SqlDataReaderToObject.Tests
                 connection.Close();
             }
             
-            new FileInfo(File).Delete();
+            new FileInfo(Name).Delete();
         }
 
         public void RunNonQuery(string createTableFooColumn1BigintNotNull, Dictionary<string,object> parameters = null)
         {
-            parameters = null ?? new Dictionary<string, object>();
+            parameters = parameters ?? new Dictionary<string, object>();
 
             using (var connection = GetConnection())
             {

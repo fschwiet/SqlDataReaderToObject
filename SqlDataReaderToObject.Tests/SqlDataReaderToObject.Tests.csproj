@@ -55,6 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DatabaseInitialization.cs" />
     <Compile Include="DTOs\AllTheTypes.cs" />
     <Compile Include="DTOs\Foo.cs" />
     <Compile Include="ShouldBeAbleToHydrateObjects.cs" />
