@@ -69,8 +69,6 @@ namespace SqlDataReaderToObject.Tests
             {
                 connection.Close();
             }
-            
-            new FileInfo(Name).Delete();
         }
 
         public void RunNonQuery(string createTableFooColumn1BigintNotNull, Dictionary<string,object> parameters = null)
@@ -111,7 +109,7 @@ namespace SqlDataReaderToObject.Tests
             }
         }
 
-        public void RunQuery(Action<IDataReader> handler)
+        public void RunQuery(string selectFromFoo, Action<IDataReader> handler)
         {
             using (var connection = GetConnection())
             {
@@ -119,7 +117,7 @@ namespace SqlDataReaderToObject.Tests
 
                 using (var command = connection.CreateCommand())
                 {
-                    command.CommandText = "SELECT * FROM Foo";
+                    command.CommandText = selectFromFoo;
 
                     using (var reader = command.ExecuteReader())
                     {

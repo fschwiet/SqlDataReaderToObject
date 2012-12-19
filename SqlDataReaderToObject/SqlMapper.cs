@@ -28,7 +28,12 @@ namespace SqlDataReaderToObject
 
                 if (setters.TryGetValue(name, out setter))
                 {
-                    setter(result, reader[i]);
+                    var value = reader[i];
+                    
+                    if (value == DBNull.Value)
+                        value = null;
+
+                    setter(result, value);
                 }
             }
 
