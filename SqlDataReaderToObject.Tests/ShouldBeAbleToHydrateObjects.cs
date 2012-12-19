@@ -36,10 +36,21 @@ namespace SqlDataReaderToObject.Tests
 
             given("a table whose columns have all the types and a single row", () =>
             {
-                var dto = new AllTheTypes();
+                var dto = new AllTheTypes()
+                {
+                    TheBinary = new byte[0]
+                    //TheDate = new DateTime(2000,1,1),
+                    //TheSmallDateTime = new DateTime(2000,1,1),
+                    //TheDateTime = new DateTime(2000,1,1),
+                    //TheDateTime2 = new DateTime(2000, 1, 1),
+                    //TheDateTimeOffset = new DateTime(2000, 1, 1)
+                };
 
                 beforeAll(() =>
                 {
+                    var fields = typeof(AllTheTypes).GetFields();
+                    var insertedFields = fields.Where(f => f.Name != "TheTimeStamp");
+
                     var tableExpression = new StringBuilder();
                     tableExpression.AppendLine("CREATE TABLE AllTheTypes(");
 
@@ -47,24 +58,26 @@ namespace SqlDataReaderToObject.Tests
                     insertExpression.AppendLine("INSERT INTO AllTheTypes(");
 
                     var separator = "";
-                    foreach (var field in typeof (AllTheTypes).GetFields())
+                    foreach (var field in fields)
                     {
                         var sqlType = field.Name.Substring("The".Length).ToLower();
 
-                        var typePostix = "";
-                        if (field.Name.ToLower().Contains("var"))
-                            typePostix = "(MAX)";
-
-                        tableExpression.AppendLine(string.Format("    {0}[{1}] [{2}]{3} NOT NULL", separator, field.Name, sqlType, typePostix));
-                        insertExpression.AppendLine(string.Format("     {0}{1}", separator, field.Name));
+                        tableExpression.AppendLine(string.Format("    {0}[{1}] [{2}]", separator, field.Name, sqlType));
                         separator = ", ";
                     }
 
                     tableExpression.AppendLine(")");
 
                     separator = "";
+                    foreach (var field in insertedFields)
+                    {
+                        insertExpression.AppendLine(string.Format("     {0}{1}", separator, field.Name));
+                        separator = ", ";
+                    }
+
+                    separator = "";
                     insertExpression.AppendLine(") VALUES (");
-                    foreach (var field in typeof (AllTheTypes).GetFields())
+                    foreach (var field in insertedFields)
                     {
                         insertExpression.AppendLine(string.Format("     {0}@{1}", separator, field.Name));
                         separator = ", ";
@@ -72,7 +85,7 @@ namespace SqlDataReaderToObject.Tests
                     insertExpression.AppendLine(")");
 
                     Dictionary<string, object> parameters = new Dictionary<string, object>();
-                    foreach (var field in typeof(AllTheTypes).GetFields())
+                    foreach (var field in insertedFields)
                     {
                         var value = field.GetValue(dto);
                         parameters.Add("@" + field.Name, value);
