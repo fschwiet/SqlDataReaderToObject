@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using NJasmine;
@@ -38,65 +39,13 @@ namespace SqlDataReaderToObject.Tests
             {
                 var dto = new AllTheTypes()
                 {
-                    TheBinary = new byte[0]
-                    //TheDate = new DateTime(2000,1,1),
-                    //TheSmallDateTime = new DateTime(2000,1,1),
-                    //TheDateTime = new DateTime(2000,1,1),
-                    //TheDateTime2 = new DateTime(2000, 1, 1),
-                    //TheDateTimeOffset = new DateTime(2000, 1, 1)
                 };
 
                 beforeAll(() =>
                 {
-                    var fields = typeof(AllTheTypes).GetFields();
-                    var insertedFields = fields.Where(f => f.Name != "TheTimeStamp");
+                    CreateTableForType(database, "AllTheTypes", typeof (AllTheTypes));
 
-                    var tableExpression = new StringBuilder();
-                    tableExpression.AppendLine("CREATE TABLE AllTheTypes(");
-
-                    var insertExpression = new StringBuilder();
-                    insertExpression.AppendLine("INSERT INTO AllTheTypes(");
-
-                    var separator = "";
-                    foreach (var field in fields)
-                    {
-                        var sqlType = field.Name.Substring("The".Length).ToLower();
-
-                        tableExpression.AppendLine(string.Format("    {0}[{1}] [{2}]", separator, field.Name, sqlType));
-                        separator = ", ";
-                    }
-
-                    tableExpression.AppendLine(")");
-
-                    separator = "";
-                    foreach (var field in insertedFields)
-                    {
-                        insertExpression.AppendLine(string.Format("     {0}{1}", separator, field.Name));
-                        separator = ", ";
-                    }
-
-                    separator = "";
-                    insertExpression.AppendLine(") VALUES (");
-                    foreach (var field in insertedFields)
-                    {
-                        insertExpression.AppendLine(string.Format("     {0}@{1}", separator, field.Name));
-                        separator = ", ";
-                    }
-                    insertExpression.AppendLine(")");
-
-                    Dictionary<string, object> parameters = new Dictionary<string, object>();
-                    foreach (var field in insertedFields)
-                    {
-                        var value = field.GetValue(dto);
-                        parameters.Add("@" + field.Name, value);
-                    }
-
-                    Console.WriteLine(tableExpression.ToString());
-                    Console.WriteLine(insertExpression.ToString());
-                    Console.WriteLine(JsonConvert.SerializeObject(parameters));
-
-                    database.RunNonQuery(tableExpression.ToString());
-                    database.RunNonQuery(insertExpression.ToString(), parameters);
+                    InsertObject(dto, "AllTheTypes", database);
                 });
 
                 then("we should be able to read the row", () =>
@@ -110,6 +59,59 @@ namespace SqlDataReaderToObject.Tests
                     expect(() => serializedResult == expectedResult);
                 });
             });
+        }
+
+        private static void InsertObject(AllTheTypes dto, string tableName, TempDatabase database)
+        {
+            var insertedFields = dto.GetType().GetFields().Where(f => f.Name != "TheTimeStamp");
+            var insertExpression = new StringBuilder();
+            insertExpression.AppendLine("INSERT INTO " + tableName + "(");
+
+            var separator = "";
+            foreach (var field in insertedFields)
+            {
+                insertExpression.AppendLine(string.Format("     {0}{1}", separator, field.Name));
+                separator = ", ";
+            }
+
+            separator = "";
+            insertExpression.AppendLine(") VALUES (");
+            foreach (var field in insertedFields)
+            {
+                insertExpression.AppendLine(string.Format("     {0}@{1}", separator, field.Name));
+                separator = ", ";
+            }
+            insertExpression.AppendLine(")");
+
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            foreach (var field in insertedFields)
+            {
+                var value = field.GetValue(dto);
+                parameters.Add("@" + field.Name, value);
+            }
+
+            database.RunNonQuery(insertExpression.ToString(), parameters);
+        }
+
+        private static void CreateTableForType(TempDatabase database, string tableName, Type type)
+        {
+            var fields = type.GetFields();
+
+            var tableExpression = new StringBuilder();
+            tableExpression.AppendLine("CREATE TABLE " + tableName + "(");
+
+            var separator = "";
+            foreach (var field in fields)
+            {
+                var sqlType = field.Name.Substring("The".Length).ToLower();
+
+                tableExpression.AppendLine(string.Format("    {0}[{1}] [{2}]", separator, field.Name, sqlType));
+                separator = ", ";
+            }
+
+            tableExpression.AppendLine(")");
+
+            database.RunNonQuery(tableExpression.ToString());
         }
     }
 }
