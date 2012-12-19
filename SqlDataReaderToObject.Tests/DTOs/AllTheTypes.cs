@@ -36,9 +36,9 @@ namespace SqlDataReaderToObject.Tests.DTOs
         public long? TheBigInt;
         public Guid? TheUniqueIdentifier;
         public bool? TheBit;
-        public byte[] TheBinary;
-        public byte[] TheVarBinary;
-        public byte[] TheImage;
+        public byte[] TheBinary = new byte[] { 123};  // null wasn't working for binary types
+        public byte[] TheVarBinary = new byte[] { 123 };
+        public byte[] TheImage = new byte[] { 123 };
         public decimal TheDecimal;
         public DateTime? TheDate;
         public DateTime? TheSmallDateTime;
