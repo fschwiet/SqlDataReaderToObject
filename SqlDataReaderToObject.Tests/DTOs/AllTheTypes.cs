@@ -5,6 +5,8 @@ namespace SqlDataReaderToObject.Tests.DTOs
     public class AllTheTypes
     {
         public int TheInt = 123;
+        public short TheSmallInt = 345;
+        public byte TheTinyInt = 123;
         public string TheVarChar = "a";
         public string TheNVarChar = "b";
         public string TheText = "c";
@@ -28,6 +30,8 @@ namespace SqlDataReaderToObject.Tests.DTOs
     public class AllTheNullableTypes
     {
         public int? TheInt;
+        public short? TheSmallInt;
+        public byte? TheTinyInt;
         public string TheVarChar;
         public string TheNVarChar;
         public string TheText;
